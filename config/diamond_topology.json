@@ -1,0 +1,62 @@
+{
+  "topology_name": "diamond",
+  "nodes": {
+    "Alice": {
+      "role": "end_node",
+      "type": "source",
+      "active": true
+    },
+    "Bob": {
+      "role": "end_node",
+      "type": "destination",
+      "active": true
+    },
+    "R1": {
+      "role": "repeater",
+      "type": "primary",
+      "active": true
+    },
+    "R2": {
+      "role": "repeater",
+      "type": "backup",
+      "active": true
+    }
+  },
+  "channels": [
+    {
+      "node1": "Alice",
+      "node2": "R1",
+      "distance_km": 10.0,
+      "has_quantum": true,
+      "has_classical": true
+    },
+    {
+      "node1": "R1",
+      "node2": "Bob",
+      "distance_km": 10.0,
+      "has_quantum": true,
+      "has_classical": true
+    },
+    {
+      "node1": "Alice",
+      "node2": "R2",
+      "distance_km": 10.0,
+      "has_quantum": true,
+      "has_classical": true
+    },
+    {
+      "node1": "R2",
+      "node2": "Bob",
+      "distance_km": 10.0,
+      "has_quantum": true,
+      "has_classical": true
+    }
+  ],
+  "parameters": {
+    "fiber_attenuation_db_per_km": 0.2,
+    "channel_depolar_rate": 0.01,
+    "memory_T1": 1000000000.0,
+    "memory_T2": 10000000.0,
+    "memory_depolar_rate": 0.001
+  }
+}

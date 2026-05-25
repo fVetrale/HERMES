@@ -136,40 +136,67 @@ def generate_topology_nodes(
     .. code-block:: json
 
         {
-            "topology_name": "diamond_balanced",
-            "nodes": [
+            "topology_name": "diamond",
+            "nodes": {
+                "Alice": {
+                    "role": "end_node",
+                    "type": "source",
+                    "active": true
+                }
+            },
+            "channels": [
                 {
-                    "name": "Alice",
-                    "num_mem_positions": 2,
-                    "t2_time": 1000000,
-                    "qports": ["qin_R1", "qin_R2"],
-                    "cports": ["cout_R1", "cout_R2"]
-                },
-                ...
-            ]
+                    "node1": "Alice",
+                    "node2": "R1",
+                    "distance_km": 10.0,
+                    "has_quantum": true,
+                    "has_classical": true
+                }
+            ],
+            "parameters": {
+                "memory_T2": 10000000.0
+            }
         }
 
     :param topology_config: Dizionario Python estratto dal JSON di topologia.
     :returns: Dizionario ``{nome_nodo: QuantumNode}`` contenente tutti i nodi
               istanziati e configurati.
-    :raises KeyError: Se un elemento della lista ``nodes`` manca di campi obbligatori.
+    :raises KeyError: Se mancano campi obbligatori nella configurazione.
     """
     nodes: Dict[str, QuantumNode] = {}
+    
+    params = topology_config.get("parameters", {})
+    t2_time = params.get("memory_T2", 0.0)
+    
+    # Fissiamo 2 slot di memoria per nodo (necessari per BBM92 Entanglement Swapping)
+    num_mem = 2 
 
-    for node_cfg in topology_config["nodes"]:
-        name: str = node_cfg["name"]
-        num_mem: int = node_cfg.get("num_mem_positions", 1)
-        t2: float = node_cfg.get("t2_time", 0.0)
+    for name, node_cfg in topology_config.get("nodes", {}).items():
+        if not node_cfg.get("active", True):
+            continue
+            
+        qports = []
+        cports = []
+        
+        # Determiniamo le porte necessarie ispezionando i canali
+        for channel in topology_config.get("channels", []):
+            if channel["node1"] == name or channel["node2"] == name:
+                other_node = channel["node2"] if channel["node1"] == name else channel["node1"]
+                
+                if channel.get("has_quantum", False):
+                    qports.extend([f"qin_{other_node}", f"qout_{other_node}"])
+                if channel.get("has_classical", False):
+                    cports.extend([f"cin_{other_node}", f"cout_{other_node}"])
 
         ports_config: Dict[str, List[str]] = {
-            "qports": node_cfg.get("qports", []),
-            "cports": node_cfg.get("cports", []),
+            "qports": qports,
+            "cports": cports,
         }
 
         node = build_node(
             node_name=name,
             num_mem_positions=num_mem,
-            t2_time=t2,
+            t2_time=t2_time,
             physical_ports_config=ports_config,
         )
         nodes[name] = node
@@ -182,23 +209,21 @@ def generate_topology_nodes(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Frammento di configurazione JSON simulato per il nodo "Alice"
-    sample_topology_config = {
-        "topology_name": "test_isolated",
-        "nodes": [
-            {
-                "name": "Alice",
-                "num_mem_positions": 2,
-                "t2_time": 1_000_000,  # 1 ms = 1.000.000 ns
-                "qports": ["qin_R1", "qin_R2"],
-                "cports": ["cout_R1", "cout_R2"],
-            }
-        ],
-    }
+    import json
+    import os
+
+    # Determina il percorso al file diamond_topology.json relativo a questo script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(current_dir, "..", "..", "config", "diamond_topology.json")
+    config_path = os.path.abspath(config_path)
 
     print("=" * 60)
     print(" HERMES — Test Isolato di nodes.py")
     print("=" * 60)
+    print(f"Caricamento topologia da: {config_path}")
+
+    with open(config_path, "r") as f:
+        sample_topology_config = json.load(f)
 
     # Generazione dei nodi dalla configurazione di test
     network_nodes = generate_topology_nodes(sample_topology_config)
