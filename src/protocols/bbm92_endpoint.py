@@ -38,7 +38,7 @@ class BBM92EndpointProtocol(NodeProtocol):
         
         # Buffer di ricezione quantistica e classica
         self.qubit_queue = []
-        self.herald_queue = []
+        self.herald_queue = {}
         
         # Sifting / Probing buffers
         self.local_measurements = {}
@@ -122,7 +122,9 @@ class BBM92EndpointProtocol(NodeProtocol):
                 if msg is None: break
                 q = msg.items[0]
                 if isinstance(q, list): q = q[0]
-                self.qubit_queue.append(q)
+                seq = msg.meta.get("seq", -1)
+                if seq != -1:
+                    self.qubit_queue.append((seq, q))
                 
         # 2. Heralds
         if self.cin_active:
@@ -130,7 +132,9 @@ class BBM92EndpointProtocol(NodeProtocol):
                 msg = self.cin_active.rx_input()
                 if msg is None: break
                 if msg.meta.get("header") == "HERALDING":
-                    self.herald_queue.append((msg.items[0], msg.items[1]))
+                    seq = msg.meta.get("seq", -1)
+                    if seq != -1:
+                        self.herald_queue[seq] = (msg.items[0], msg.items[1])
                     
         # 3. Sifting messages dall'altro nodo
         if self.cin_other:
@@ -142,9 +146,10 @@ class BBM92EndpointProtocol(NodeProtocol):
                     self.remote_measurements[data["seq"]] = data
 
     def _process_pairs(self):
-        while len(self.qubit_queue) > 0 and len(self.herald_queue) > 0:
-            qubit = self.qubit_queue.pop(0)
-            m0, m1 = self.herald_queue.pop(0)
+        qubits_to_keep = []
+        for seq, qubit in self.qubit_queue:
+            if seq in self.herald_queue:
+                m0, m1 = self.herald_queue.pop(seq)
             
             # Correzione Attiva (solo Bob)
             if self.is_bob:
@@ -177,6 +182,8 @@ class BBM92EndpointProtocol(NodeProtocol):
                 self.cout_other.tx_output(Message([local_data], header="SIFTING"))
             
             self.seq_num += 1
+            
+        self.qubit_queue = qubits_to_keep
 
     def _process_sifting(self):
         seqs_to_process = [seq for seq in self.local_measurements if seq in self.remote_measurements]

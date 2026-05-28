@@ -134,7 +134,7 @@ def run_diamond_simulation():
         alice_port_prefix="Alice",
         bob_port_prefix="Bob",
         is_primary=True,
-        cycle_time_ns=100000
+        cycle_time_ns=10000
     )
     
     # Protocollo Ripetitore R2 (STANDBY)
@@ -160,7 +160,7 @@ def run_diamond_simulation():
 
     # 4. Iniezione del Pericolo (Adversary)
     # L'attacco scatta al tempo t_attack = 500 ms
-    t_attack_ns = 50e6
+    t_attack_ns = 500e6
 
     # L'Eve distrugge il canale superiore R1
     r1_qchannels = [ch for ch in all_channels if isinstance(ch, HermesQuantumChannel) and ("R1" in ch.name)]

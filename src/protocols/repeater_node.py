@@ -234,48 +234,36 @@ class RepeaterProtocol(NodeProtocol):
             self.node.name, old_state.name, new_state.name, ns.sim_time(),
         )
 
-    def _generate_epr_pair(self):
+    def _generate_and_send_photons(self):
         """
-        Genera una coppia EPR locale nello stato di Bell |Φ⁺⟩ e la
-        carica nelle posizioni 0 e 1 della memoria quantistica del nodo.
-
-        Utilizza ``qubitapi.create_qubits`` + ``qubitapi.assign_qstate``
-        per creare la coppia entangled, poi la deposita nella qmemory
-        tramite ``qmemory.put()``.
+        Genera due coppie EPR per l'Entanglement Swapping.
+        La prima coppia è condivisa tra Alice e il ripetitore (posizione 0).
+        La seconda coppia è condivisa tra Bob e il ripetitore (posizione 1).
+        I qubit per Alice e Bob vengono inviati subito.
         """
         qmem = self.node.qmemory
 
-        # Crea 2 qubit e li prepara nello stato |Φ⁺⟩
-        q0, q1 = qubitapi.create_qubits(2)
-        qubitapi.assign_qstate([q0, q1], ketstates.b00)
+        # Coppia A: per Alice e Ripetitore
+        qA_Alice, qA_Rep = qubitapi.create_qubits(2)
+        qubitapi.assign_qstate([qA_Alice, qA_Rep], ketstates.b00)
+        
+        # Coppia B: per Bob e Ripetitore
+        qB_Bob, qB_Rep = qubitapi.create_qubits(2)
+        qubitapi.assign_qstate([qB_Bob, qB_Rep], ketstates.b00)
 
-        # Deposita nella memoria quantistica locale (pos 0 e 1)
-        qmem.put(q0, positions=[0])
-        qmem.put(q1, positions=[1])
-
-        logger.debug(
-            "[%s] Coppia EPR |Φ⁺⟩ generata e caricata in memoria (t = %.2f ns)",
-            self.node.name, ns.sim_time(),
-        )
-
-    def _send_photons(self):
-        """
-        Estrae i qubit dalla memoria locale e li invia simultaneamente
-        verso Alice (posizione 0) e Bob (posizione 1) attraverso le
-        porte quantistiche di uscita.
-        """
-        qmem = self.node.qmemory
-
-        # Pop: estrae il qubit dalla memoria e lo restituisce
-        qubit_alice = qmem.pop(positions=[0])
-        qubit_bob = qmem.pop(positions=[1])
+        # I qubit locali restano al ripetitore per la BSM
+        qmem.put(qA_Rep, positions=[0])
+        qmem.put(qB_Rep, positions=[1])
 
         # Invio attraverso le porte quantistiche
-        self._qout_alice().tx_output(Message(qubit_alice))
-        self._qout_bob().tx_output(Message(qubit_bob))
+        seq = self.bsm_count
+        msg_alice = Message(qA_Alice, seq=seq)
+        msg_bob = Message(qB_Bob, seq=seq)
+        self._qout_alice().tx_output(msg_alice)
+        self._qout_bob().tx_output(msg_bob)
 
         logger.debug(
-            "[%s] Fotoni inviati → Alice (qout_%s) e Bob (qout_%s) (t = %.2f ns)",
+            "[%s] Coppie EPR generate. Fotoni inviati → Alice (qout_%s) e Bob (qout_%s) (t = %.2f ns)",
             self.node.name, self._alice_prefix, self._bob_prefix, ns.sim_time(),
         )
 
@@ -336,7 +324,8 @@ class RepeaterProtocol(NodeProtocol):
         :param m0: Risultato della misura sul qubit 0 (control).
         :param m1: Risultato della misura sul qubit 1 (target).
         """
-        heralding_msg = Message([m0, m1], header="HERALDING")
+        seq = self.bsm_count - 1
+        heralding_msg = Message([m0, m1], header="HERALDING", seq=seq)
 
         self._cout_alice().tx_output(heralding_msg)
         self._cout_bob().tx_output(heralding_msg)
@@ -423,11 +412,8 @@ class RepeaterProtocol(NodeProtocol):
 
             # ── ACTIVE: ciclo di generazione EPR + BSM + Heralding ───
 
-            # 1. Genera coppia EPR |Φ⁺⟩ in memoria locale
-            self._generate_epr_pair()
-
-            # 2. Invia i fotoni gemelli ad Alice e Bob
-            self._send_photons()
+            # 1 & 2. Genera due coppie EPR e invia i qubit esterni ad Alice e Bob
+            self._generate_and_send_photons()
 
             # 3. Attendi conferma di ricezione da entrambi i lati
             #    (i qubit in memoria sono già stati inviati, ora attendiamo
@@ -439,12 +425,7 @@ class RepeaterProtocol(NodeProtocol):
             #    il ripetitore ha già generato la coppia e inviato i fotoni,
             #    quindi può misurare i propri qubit subito.
 
-            # 4. Genera una NUOVA coppia per la BSM locale
-            #    (i fotoni precedenti sono stati inviati; il ripetitore
-            #     ora prepara i qubit locali per la misura di Bell)
-            self._generate_epr_pair()
-
-            # 5. Esegui la Bell State Measurement
+            # 4. Esegui la Bell State Measurement sui qubit locali
             m0, m1 = self._perform_bsm()
 
             # 6. Invia i risultati di heralding ad Alice e Bob
@@ -596,7 +577,7 @@ if __name__ == "__main__":
     print("-" * 65)
 
     # Genera e misura manualmente
-    proto_r1._generate_epr_pair()
+    proto_r1._generate_and_send_photons()
     m0, m1 = proto_r1._perform_bsm()
     print(f"[✓] BSM completata: (m₀, m₁) = ({m0}, {m1})")
     print(f"    Contatore BSM: {proto_r1.bsm_count}")
