@@ -95,12 +95,11 @@ class MetricsCollector:
 
     def start(self):
         """Avvia la raccolta dati."""
-        self.collector.start()
+        # Il DataCollector di NetSquid raccoglie automaticamente al trigger degli eventi.
         logger.info(f"[{self.collection_name}] DataCollector avviato.")
 
     def stop(self):
         """Ferma la raccolta dati."""
-        self.collector.stop()
         logger.info(f"[{self.collection_name}] DataCollector fermato.")
 
     def get_numpy_arrays(self):

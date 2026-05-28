@@ -39,8 +39,8 @@ class HermesQuantumChannel(QuantumChannel):
             length=length,
             models={
                 "delay_model": delay_model,
-                "quantum_loss": loss_model,
-                "quantum_noise": noise_model
+                "quantum_loss_model": loss_model,
+                "quantum_noise_model": noise_model
             }
         )
 

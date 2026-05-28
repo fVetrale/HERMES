@@ -68,8 +68,8 @@ class AdversaryProtocol(Protocol):
 
         # Sabotaggio dei canali bersaglio collegati
         for channel in self.target_channels:
-            # I modelli di rumore nei canali quantistici sono salvati in models["quantum_noise"]
-            noise_model = channel.models.get("quantum_noise")
+            # I modelli di rumore nei canali quantistici sono salvati in models["quantum_noise_model"]
+            noise_model = channel.models.get("quantum_noise_model")
             if isinstance(noise_model, DepolarNoiseModel):
                 noise_model.depolar_rate = self.attack_depolar_rate
                 logging.warning(
