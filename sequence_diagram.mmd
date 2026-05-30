@@ -1,0 +1,116 @@
+---
+query: "genera grafo del progetto "
+references:
+  - "File: /src/protocols/__init__.py"
+  - "File: /src/protocols/repeater_node.py"
+  - "File: /src/protocols/bbm92_endpoint.py"
+  - "File: /src/protocols/adversary.py"
+  - "File: /src/utils/metrics_collector.py"
+  - "File: /src/components/__init__.py"
+  - "File: /src/components/nodes.py"
+  - "File: /src/components/channels.py"
+  - "File: /src/routing/orchestrator.py"
+generationTime: 2026-05-28T15:02:06.368Z
+---
+sequenceDiagram
+    participant Eve as Adversary
+    participant R1 as Repeater_Primary
+    participant R2 as Repeater_Backup
+    participant Alice as BBM92_Alice
+    participant Bob as BBM92_Bob
+    participant Orch as Orchestrator
+
+    %% REQUIREMENT SATISFIED: Activate every participant ONCE before any complex blocks
+    activate Eve
+    activate R1
+    activate R2
+    activate Alice
+    activate Bob
+    activate Orch
+
+    rect rgb(240, 248, 255)
+    Note over R1, Orch: PHASE 1: Normal Operation (Entanglement Swapping & BBM92)
+    R1->>R1: Generate 2 EPR pairs (|Φ⁺⟩)
+    
+    %% REQUIREMENT SATISFIED: Participants are globally active before 'par' block
+    par R1 to Alice
+        R1->>Alice: Transmit Qubit (qA_Alice) via QuantumChannel
+    and R1 to Bob
+        R1->>Bob: Transmit Qubit (qB_Bob) via QuantumChannel
+    end
+
+    R1->>R1: Perform Bell State Measurement (BSM) on remaining qubits
+
+    par R1 to Alice
+        R1->>Alice: HERALDING Message (m0, m1) via ClassicalChannel
+    and R1 to Bob
+        R1->>Bob: HERALDING Message (m0, m1) via ClassicalChannel
+    end
+
+    Bob->>Bob: Active Pauli Correction (X/Z based on m0/m1)
+    
+    par Endpoint Measurement
+        Alice->>Alice: Measure Qubit (Random Basis X/Z)
+    and Endpoint Measurement
+        Bob->>Bob: Measure Qubit (Random Basis X/Z)
+    end
+
+    par Sifting & Probing
+        Alice->>Bob: SIFTING Data (Local basis/result)
+    and Sifting & Probing
+        Bob->>Alice: SIFTING Data (Local basis/result)
+    end
+
+    Alice->>Alice: Calculate Windowed QBER & Fidelity
+    Bob->>Bob: Calculate Windowed QBER & Fidelity
+    
+    par Telemetry Reporting
+        Alice->>Orch: METRICS_UPDATE (QBER, Fidelity)
+    and Telemetry Reporting
+        Bob->>Orch: METRICS_UPDATE (QBER, Fidelity)
+    end
+    end
+
+    rect rgb(255, 228, 225)
+    Note over Eve, R1: PHASE 2: Dynamic Sabotage Attack
+    Eve->>R1: t_attack reached: Inject DepolarNoise (rate=0.25)
+    Note over R1, Alice: Subsequent protocol cycles produce highly degraded qubits
+    R1->>Alice: Transmit Degraded Qubits
+    R1->>Bob: Transmit Degraded Qubits
+    Alice->>Alice: Measure & Compute (QBER > 11%)
+    Alice->>Orch: METRICS_UPDATE (QBER: 0.15, Fidelity: 0.50)
+    end
+
+    rect rgb(255, 250, 205)
+    Note over Orch, R2: PHASE 3: Detection & Hardware Routing Switch
+    
+    %% REQUIREMENT SATISFIED: 'alt' block used without ANY inner deactivations
+    alt QBER < 0.11 and Fidelity >= 0.75
+        Orch->>Orch: Continue monitoring telemetry
+    else QBER >= 0.11 or Fidelity < 0.75
+        Orch->>Orch: SECURITY ALARM Triggered
+        
+        par Disable Primary Hardware
+            Orch->>R1: CMD_SWITCH_TO_STANDBY (Path Control)
+            R1->>R1: Switch mode STANDBY & Flush Memory
+        and Enable Backup Hardware
+            Orch->>R2: CMD_SWITCH_TO_ACTIVE (Path Control)
+        end
+
+        par Reconfigure Endpoints
+            Orch->>Alice: switch_repeater("R2")
+            Orch->>Bob: switch_repeater("R2")
+        end
+        
+        Note over R2, Bob: Protocol successfully diroted. BBM92 resumes on Backup Repeater R2.
+        R2->>Alice: Generate & Transmit new secure Qubits
+    end
+    end
+
+    %% REQUIREMENT SATISFIED: All participants deactivated EXACTLY ONCE at the outermost scope
+    deactivate Eve
+    deactivate R1
+    deactivate R2
+    deactivate Alice
+    deactivate Bob
+    deactivate Orch
