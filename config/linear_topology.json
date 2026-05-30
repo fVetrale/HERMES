@@ -35,7 +35,7 @@
   ],
   "parameters": {
     "fiber_attenuation_db_per_km": 0.2,
-    "channel_depolar_rate": 0.01,
+    "channel_depolar_rate": 0.1,
     "memory_T1": 1000000000.0,
     "memory_T2": 10000000.0,
     "memory_depolar_rate": 0.001

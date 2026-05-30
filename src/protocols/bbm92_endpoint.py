@@ -83,6 +83,10 @@ class BBM92EndpointProtocol(NodeProtocol):
         self._active_repeater = new_repeater
         self.qubit_queue.clear()
         self.herald_queue.clear()
+        self.local_measurements.clear()
+        self.remote_measurements.clear()
+        self.recent_probe_results.clear()
+        self.matched_probes = 0
 
     def run(self):
         """Loop asincrono del protocollo."""
@@ -148,8 +152,11 @@ class BBM92EndpointProtocol(NodeProtocol):
     def _process_pairs(self):
         qubits_to_keep = []
         for seq, qubit in self.qubit_queue:
-            if seq in self.herald_queue:
-                m0, m1 = self.herald_queue.pop(seq)
+            if seq not in self.herald_queue:
+                qubits_to_keep.append((seq, qubit))
+                continue
+                
+            m0, m1 = self.herald_queue.pop(seq)
             
             # Correzione Attiva (solo Bob)
             if self.is_bob:
@@ -213,7 +220,8 @@ class BBM92EndpointProtocol(NodeProtocol):
                             "qber": self.qber,
                             "fidelity": self.fidelity,
                             "matched_probes": self.matched_probes,
-                            "sifted_key_len": len(self.sifted_key)
+                            "sifted_key_len": len(self.sifted_key),
+                            "active_repeater": self._active_repeater
                         })
                         logger.debug(f"[{self.node.name}] Metrics Window - QBER: {self.qber:.4f}, Fidelity: {self.fidelity:.4f}")
                         

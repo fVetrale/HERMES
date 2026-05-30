@@ -90,7 +90,8 @@ class MetricsCollector:
             "qber": qber,
             "fidelity": fidelity,
             "skr_bps": skr_bps,
-            "sifted_key_len": sifted_key_len
+            "sifted_key_len": sifted_key_len,
+            "active_repeater": result.get("active_repeater", "Unknown")
         }
 
     def start(self):
@@ -117,7 +118,8 @@ class MetricsCollector:
             "fidelity": df["fidelity"].to_numpy(),
             "qber": df["qber"].to_numpy(),
             "skr": df["skr_bps"].to_numpy(),
-            "nodes": df["node"].to_numpy()
+            "nodes": df["node"].to_numpy(),
+            "active_repeater": df["active_repeater"].to_numpy() if "active_repeater" in df.columns else np.array([])
         }
 
     def dump_to_csv(self, output_dir="results"):
