@@ -159,7 +159,7 @@ class BBM92EndpointProtocol(NodeProtocol):
                     ns.qubits.operate(qubit, ns.Z)
                     
             # Selezione base e Probe
-            is_probe = (self.seq_num % max(1, int(1.0 / self.probing_rate)) == 0)
+            is_probe = (seq % max(1, int(1.0 / self.probing_rate)) == 0)
             basis = Basis.X if random.random() < 0.5 else Basis.Z
             
             # Misurazione
@@ -170,18 +170,17 @@ class BBM92EndpointProtocol(NodeProtocol):
             res = int(res)
             
             local_data = {
-                "seq": self.seq_num,
+                "seq": seq,
                 "basis": basis,
                 "is_probe": is_probe,
                 "res": res
             }
-            self.local_measurements[self.seq_num] = local_data
+            self.local_measurements[seq] = local_data
             
             # Invia classica ad altro endpoint
             if self.cout_other:
                 self.cout_other.tx_output(Message([local_data], header="SIFTING"))
-            
-            self.seq_num += 1
+
             
         self.qubit_queue = qubits_to_keep
 
