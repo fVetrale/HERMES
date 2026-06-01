@@ -1,0 +1,20 @@
+time_stamp,entity_name,node,qber,fidelity,skr_bps,sifted_key_len,active_repeater
+27050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,5741.2041686126195,450.0,R1
+52050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,6040.256624410071,911.0,R1
+79450000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.0,1.0,17608.558842039016,1399.0,R1
+102550000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,9257.87981882383,1842.0,R1
+128750000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.12,0.8200000000000001,0.0,2297.0,R1
+190250000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.08,0.88,2785.7721286942765,2709.0,R2
+256550000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.08,0.88,2413.5869266014943,3165.0,R2
+309850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,3929.4776519154925,3528.0,R2
+376850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,5473.512852817705,4002.0,R2
+443050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.02,0.97,7225.412111921057,4464.0,R2
+504550000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.02,0.97,6970.074638291195,4904.0,R2
+563150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,3260.820687841718,5321.0,R2
+619850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,4767.916714693663,5734.0,R2
+679150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,4676.420616577074,6162.0,R2
+747050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,4590.824640507629,6654.0,R2
+813950000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.08,0.88,1713.5316740536823,7129.0,R2
+872150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.02,0.97,6229.310209718892,7576.0,R2
+942050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,2954.162033731338,8064.0,R2
+991150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,4375.949611807454,8415.0,R2
