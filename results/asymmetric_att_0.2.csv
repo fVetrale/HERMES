@@ -1,0 +1,18 @@
+time_stamp,entity_name,node,qber,fidelity,skr_bps,sifted_key_len,active_repeater
+21250000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,1126.3718470152892,386.0,R1
+48650000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.02,0.97,12603.014845909282,855.0,R1
+71850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.16,0.76,0.0,1276.0,R1
+139150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.12,0.8200000000000001,0.0,1741.0,R2
+194450000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,679.242845511247,2130.0,R2
+243150000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,624.5510285819475,2449.0,R2
+303850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,586.7215299049958,2875.0,R2
+358750000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,561.2337706793246,3247.0,R2
+421750000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,3035.005547627967,3709.0,R2
+484850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.1,0.85,533.5686647231875,4172.0,R2
+536650000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.02,0.97,6088.127786003782,4556.0,R2
+623250000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,2864.981911896477,5174.0,R2
+698450000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.16,0.76,0.0,5711.0,R2
+756350000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.06,0.91,2801.1255141420506,6139.0,R2
+808850000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.04,0.94,4182.076684310098,6563.0,R2
+882050000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.08,0.88,1573.2509583249912,7093.0,R2
+951650000.0,"BBM92EndpointProtocol(Node(name='Bob'), 'BBM92_Bob')",Bob,0.14,0.79,0.0,7562.0,R2
