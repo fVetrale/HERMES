@@ -1,7 +1,3 @@
-"""
-src/utils/metrics_collector.py — Modulo per la raccolta e storicizzazione delle metriche.
-"""
-
 import math
 import os
 import logging
@@ -27,14 +23,10 @@ class MetricsCollector:
     def __init__(self, endpoint_protocols, collection_name="hermes_metrics"):
         """
         Inizializza il raccoglitore di metriche.
-        
-        :param endpoint_protocols: Lista di protocolli (es. [alice, bob]) da cui ascoltare METRICS_UPDATE.
-        :param collection_name: Nome identificativo della raccolta per i log e i file esportati.
         """
         self.endpoint_protocols = endpoint_protocols
         self.collection_name = collection_name
         
-        # Inizializziamo il DataCollector nativo di NetSquid
         self.collector = DataCollector(
             self._collect_data,
             include_time_stamp=True,
@@ -123,12 +115,6 @@ class MetricsCollector:
         }
 
     def dump_to_csv(self, output_dir="results"):
-        """
-        Esporta le serie temporali in un file CSV per l'analisi e il plotting finale.
-        
-        :param output_dir: Directory di destinazione.
-        :return: Percorso al file CSV generato.
-        """
         df = self.collector.dataframe
         if df is None or df.empty:
             logger.warning(f"[{self.collection_name}] Nessun dato da esportare.")

@@ -1,7 +1,3 @@
-"""
-src/protocols/bbm92_endpoint.py — Protocollo Endpoint per Alice e Bob (BBM92).
-"""
-
 import logging
 import random
 from enum import Enum, auto
@@ -44,7 +40,6 @@ class BBM92EndpointProtocol(NodeProtocol):
         self.local_measurements = {}
         self.remote_measurements = {}
         
-        # Metriche
         self.matched_probes = 0
         self.error_probes = 0
         self.qber = 0.0
@@ -89,7 +84,6 @@ class BBM92EndpointProtocol(NodeProtocol):
         self.matched_probes = 0
 
     def run(self):
-        """Loop asincrono del protocollo."""
         while True:
             # Attendiamo l'arrivo di messaggi su una qualsiasi delle porte rilevanti
             evts = []

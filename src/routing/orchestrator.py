@@ -1,7 +1,3 @@
-"""
-src/routing/orchestrator.py — Piano di Controllo Classico (Orchestrator) per HERMES.
-"""
-
 import logging
 import netsquid as ns
 from netsquid.protocols import Protocol
@@ -23,9 +19,6 @@ class OrchestratorProtocol(Protocol):
     THRESHOLD_FIDELITY = 0.75
 
     def __init__(self, name="Orchestrator", alice_proto=None, bob_proto=None, r1_proto=None, r2_proto=None):
-        """
-        Inizializza l'Orchestratore e riceve i riferimenti ai protocolli dei nodi.
-        """
         super().__init__(name=name)
         self.alice = alice_proto
         self.bob = bob_proto
@@ -39,17 +32,12 @@ class OrchestratorProtocol(Protocol):
         """
         super().start()
         
-        # In Netsquid l'handler del segnale deve avere la firma (event) o (event, **kwargs)
-        # ma possiamo semplicemente intercettare i segnali METRICS_UPDATE
         class TelemetryListener:
             def __init__(self, orchestrator):
                 self.orchestrator = orchestrator
                 
             def __call__(self, event_expression):
                 pass
-                
-        # Per semplicità, possiamo avviare un loop interno o usare wait_for
-        # ma il modo corretto è usare un generatore run()
         pass
 
     def run(self):

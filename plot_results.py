@@ -35,20 +35,13 @@ def plot_results():
         if os.path.exists(config["path"]):
             df = pd.read_csv(config["path"])
             
-            # Converte il timestamp da ns a ms
             time_ms = df['time_stamp'] / 1e6
-            
-            # Estrae e calcola il QBER in percentuale
             qber_pct = df['qber'] * 100
-            
-            # Estrae l'SKR
             skr = df['skr_bps']
             
-            # Plot sul primo riquadro (QBER)
             ax_qber.plot(time_ms, qber_pct, label=label, 
                          color=config["color"], linestyle=config["linestyle"])
             
-            # Plot sul secondo riquadro (SKR)
             ax_skr.plot(time_ms, skr, label=label, 
                         color=config["color"], linestyle=config["linestyle"])
         else:
@@ -68,19 +61,16 @@ def plot_results():
     ax_skr.set_ylabel("Secret Key Rate (bps)")
     ax_skr.set_title("Andamento del Secret Key Rate (SKR)")
     ax_skr.set_xlabel("Tempo di Simulazione (ms)")
-    # Linea verticale per l'attacco
     ax_skr.axvline(x=500, color='gray', linestyle='--')
     ax_skr.legend()
     ax_skr.grid(True, linestyle=':', alpha=0.7)
     
-    # Ottimizza gli spazi e salva
     plt.tight_layout()
     output_path = os.path.join("results", "network_performance.png")
     os.makedirs("results", exist_ok=True)
     plt.savefig(output_path, dpi=300)
     print(f"\nGrafico generato e salvato in: {output_path}")
     
-    # Mostra a schermo
     plt.show()
 
 if __name__ == "__main__":

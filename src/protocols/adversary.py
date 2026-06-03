@@ -19,15 +19,7 @@ class AdversaryProtocol(Protocol):
     """
 
     def __init__(self, name="Eve", target_node=None, target_channels=None, t_attack=1e6, attack_depolar_rate=0.25):
-        """
-        Inizializza l'Avversario.
-        
-        :param name: Nome identificativo dell'avversario.
-        :param target_node: Istanza del QuantumNode bersaglio (es. ripetitore primario R1).
-        :param target_channels: Lista di istanze di QuantumChannel bersaglio.
-        :param t_attack: Tempo esatto dell'attacco (in nanosecondi) in cui Eve si risveglia.
-        :param attack_depolar_rate: Nuovo tasso di depolarizzazione (superiore alla soglia critica).
-        """
+
         super().__init__(name=name)
         self.target_node = target_node
         self.target_channels = target_channels or []
@@ -35,12 +27,6 @@ class AdversaryProtocol(Protocol):
         self.attack_depolar_rate = attack_depolar_rate
 
     def run(self):
-        """
-        Pianificazione dell'Attacco: routine asincrona che rimane in modalità di sonno
-        (yield self.await_timer) fino al tempo impostato per il sabotaggio, poi 
-        inietta il rumore modificando a runtime il depolar_rate.
-        """
-        # Calcoliamo quanto tempo manca al momento dell'attacco
         current_time = ns.sim_time()
         time_to_wait = self.t_attack - current_time
         

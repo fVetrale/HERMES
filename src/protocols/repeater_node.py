@@ -1,5 +1,4 @@
 """
-src/protocols/repeater_node.py — Protocollo asincrono per i nodi ripetitore HERMES.
 
 Implementa il protocollo guidato dagli eventi (Event-Driven) che gira
 permanentemente sui nodi intermedi (R₁, R₂) della rete quantistica.
@@ -42,34 +41,17 @@ from netsquid.components.component import Message
 
 logger = logging.getLogger(__name__)
 
-
-# ---------------------------------------------------------------------------
-#  Costanti di Protocollo
-# ---------------------------------------------------------------------------
-
 class RepeaterState(Enum):
     """Stati operativi del nodo ripetitore."""
     ACTIVE = auto()    # Sorgente a piena potenza — genera e inoltra coppie EPR
     STANDBY = auto()   # Sorgente attenuata — in attesa di comando di switch
 
-# Segnali emessi dal protocollo verso l'orchestratore
 SIGNAL_BSM_DONE = "BSM_DONE"
 SIGNAL_STATE_SWITCH = "STATE_SWITCH"
 
 
-# ---------------------------------------------------------------------------
-#  Utilità: estensione del gate-set del processore
-# ---------------------------------------------------------------------------
-
 def ensure_bsm_capable(qprocessor):
-    """
-    Verifica che il QuantumProcessor supporti CNOT e H, necessari per la BSM.
 
-    Se le istruzioni non sono già registrate, le aggiunge dinamicamente
-    al set di istruzioni fisiche del processore (PhysicalInstruction).
-
-    :param qprocessor: Il QuantumProcessor da validare/estendere.
-    """
     existing_instrs = {
         pi.instruction for pi in qprocessor.phys_instructions
     } if hasattr(qprocessor, 'phys_instructions') and qprocessor.phys_instructions else set()
@@ -91,11 +73,6 @@ def ensure_bsm_capable(qprocessor):
             pi.instruction.name, qprocessor.name,
         )
 
-
-# ---------------------------------------------------------------------------
-#  Protocollo Ripetitore
-# ---------------------------------------------------------------------------
-
 class RepeaterProtocol(NodeProtocol):
     """
     Protocollo asincrono NetSquid per i nodi ripetitore (R₁, R₂).
@@ -110,25 +87,8 @@ class RepeaterProtocol(NodeProtocol):
         4. Esegue la BSM sui qubit rimasti in memoria locale.
         5. Invia il risultato di heralding (2 bit) sulle porte classiche
            (cout_Alice, cout_Bob).
-
-    **Gestione ACTIVE/STANDBY:**
-
-    - Se ``initial_state`` è ``STANDBY``, il protocollo resta in attesa di
-      un messaggio ``SWITCH_TO_ACTIVE`` sulla porta classica di controllo
-      prima di iniziare a generare coppie.
-    - Il passaggio da ``ACTIVE`` a ``STANDBY`` (e viceversa) può essere
-      comandato a runtime dall'orchestratore tramite messaggi classici.
-
-    :param node: Il QuantumNode su cui gira il protocollo.
-    :param name: Nome univoco dell'istanza del protocollo.
-    :param alice_port_prefix: Prefisso delle porte verso Alice (default "Alice").
-    :param bob_port_prefix: Prefisso delle porte verso Bob (default "Bob").
-    :param initial_state: Stato operativo iniziale (ACTIVE o STANDBY).
-    :param cycle_time_ns: Intervallo minimo in ns tra due cicli di generazione
-                          (rate-limiting per evitare saturazione della memoria).
     """
 
-    # Messaggi di controllo attesi dall'orchestratore
     CMD_SWITCH_TO_ACTIVE = "SWITCH_TO_ACTIVE"
     CMD_SWITCH_TO_STANDBY = "SWITCH_TO_STANDBY"
 
@@ -168,10 +128,6 @@ class RepeaterProtocol(NodeProtocol):
             self.node.name, self._state.name,
         )
 
-    # ------------------------------------------------------------------
-    #  Proprietà pubbliche
-    # ------------------------------------------------------------------
-
     @property
     def state(self) -> RepeaterState:
         """Restituisce lo stato operativo corrente del ripetitore."""
@@ -182,9 +138,6 @@ class RepeaterProtocol(NodeProtocol):
         """True se il ripetitore è in modalità ACTIVE."""
         return self._state == RepeaterState.ACTIVE
 
-    # ------------------------------------------------------------------
-    #  Porte di rete
-    # ------------------------------------------------------------------
 
     def _qout_alice(self):
         """Porta quantistica in uscita verso Alice."""
@@ -210,9 +163,6 @@ class RepeaterProtocol(NodeProtocol):
         """Porta classica in ingresso da Bob (per comandi orchestratore)."""
         return self.node.ports[f"cin_{self._bob_prefix}"]
 
-    # ------------------------------------------------------------------
-    #  Metodi di supporto
-    # ------------------------------------------------------------------
 
     def _switch_state(self, new_state: RepeaterState):
         """
@@ -320,9 +270,6 @@ class RepeaterProtocol(NodeProtocol):
 
         Il messaggio è una tupla ``(m0, m1)`` inviata sulle porte
         classiche di uscita.
-
-        :param m0: Risultato della misura sul qubit 0 (control).
-        :param m1: Risultato della misura sul qubit 1 (target).
         """
         seq = self.bsm_count - 1
         heralding_msg = Message([m0, m1], header="HERALDING", seq=seq)
@@ -337,10 +284,6 @@ class RepeaterProtocol(NodeProtocol):
             "BSM #%d (t = %.2f ns)",
             self.node.name, m0, m1, self.bsm_count, ns.sim_time(),
         )
-
-    # ------------------------------------------------------------------
-    #  Gestione comandi dall'orchestratore
-    # ------------------------------------------------------------------
 
     def _check_control_messages(self):
         """
@@ -367,10 +310,6 @@ class RepeaterProtocol(NodeProtocol):
                 elif item == self.CMD_SWITCH_TO_STANDBY and self.is_active:
                     self._switch_state(RepeaterState.STANDBY)
 
-    # ------------------------------------------------------------------
-    #  Loop principale del protocollo (Event-Driven)
-    # ------------------------------------------------------------------
-
     def run(self):
         """
         Loop asincrono principale del protocollo ripetitore.
@@ -394,7 +333,6 @@ class RepeaterProtocol(NodeProtocol):
         )
 
         while True:
-            # ── STANDBY: attendi comando di attivazione ──────────────
             if not self.is_active:
                 logger.debug(
                     "[%s] In STANDBY — in attesa di SWITCH_TO_ACTIVE...",
@@ -412,52 +350,28 @@ class RepeaterProtocol(NodeProtocol):
 
             # ── ACTIVE: ciclo di generazione EPR + BSM + Heralding ───
 
-            # 1 & 2. Genera due coppie EPR e invia i qubit esterni ad Alice e Bob
             self._generate_and_send_photons()
 
-            # 3. Attendi conferma di ricezione da entrambi i lati
-            #    (i qubit in memoria sono già stati inviati, ora attendiamo
-            #     che i canali quantistici completino la consegna prima
-            #     di procedere con la BSM sui qubit trattenuti localmente)
-            #
-            #    In questa implementazione, la BSM viene eseguita
-            #    immediatamente sui qubit locali (entanglement swapping):
-            #    il ripetitore ha già generato la coppia e inviato i fotoni,
-            #    quindi può misurare i propri qubit subito.
-
-            # 4. Esegui la Bell State Measurement sui qubit locali
             m0, m1 = self._perform_bsm()
 
-            # 6. Invia i risultati di heralding ad Alice e Bob
             self._send_heralding(m0, m1)
 
-            # 7. Emetti segnale BSM_DONE per l'orchestratore
             self.send_signal(SIGNAL_BSM_DONE, result={
                 "node": self.node.name,
                 "bsm_result": (m0, m1),
                 "sim_time": ns.sim_time(),
             })
 
-            # 8. Controlla eventuali comandi di switch pendenti
             self._check_control_messages()
 
-            # 9. Rate-limiting: attendi il tempo minimo tra cicli
             if self._cycle_time_ns > 0:
                 yield self.await_timer(duration=self._cycle_time_ns)
 
-            # 10. Controlla di nuovo eventuali comandi arrivati durante
-            #     il timer di rate-limiting
             self._check_control_messages()
 
-            # Yield per cedere il controllo al simulatore prima del
-            # prossimo ciclo (evita busy-loop a tempo zero)
             if self._cycle_time_ns <= 0:
                 yield self.await_timer(duration=1)
 
-
-# ---------------------------------------------------------------------------
-#  Factory Function
-# ---------------------------------------------------------------------------
 
 def create_repeater_protocol(
     node,
@@ -472,13 +386,6 @@ def create_repeater_protocol(
     Determina automaticamente lo stato iniziale in base al ruolo:
         - ``is_primary=True``  → R₁ parte in ACTIVE
         - ``is_primary=False`` → R₂ parte in STANDBY
-
-    :param node: Il QuantumNode su cui installare il protocollo.
-    :param alice_port_prefix: Prefisso porte verso Alice.
-    :param bob_port_prefix: Prefisso porte verso Bob.
-    :param is_primary: Se True, il nodo è il ripetitore primario (ACTIVE).
-    :param cycle_time_ns: Intervallo minimo tra cicli di generazione (ns).
-    :returns: Istanza configurata di RepeaterProtocol.
     """
     initial_state = (
         RepeaterState.ACTIVE if is_primary else RepeaterState.STANDBY
@@ -533,12 +440,10 @@ if __name__ == "__main__":
     with open(config_path, "r") as f:
         topology = json.load(f)
 
-    # Importa la factory dei nodi
     import sys
     sys.path.insert(0, os.path.join(current_dir, ".."))
     from components.nodes import generate_topology_nodes
 
-    # Genera i nodi dalla topologia
     nodes = generate_topology_nodes(topology)
 
     # Verifica la presenza dei ripetitori
@@ -582,7 +487,6 @@ if __name__ == "__main__":
     print(f"[✓] BSM completata: (m₀, m₁) = ({m0}, {m1})")
     print(f"    Contatore BSM: {proto_r1.bsm_count}")
 
-    # Test dello switch di stato su R2
     print("\n" + "-" * 65)
     print(" Test switch di stato STANDBY → ACTIVE su R2")
     print("-" * 65)
@@ -593,7 +497,6 @@ if __name__ == "__main__":
     assert proto_r2.is_active, "R2 dovrebbe essere ACTIVE dopo lo switch"
     print("[✓] Switch di stato funzionante")
 
-    # Test dello switch inverso
     proto_r2._switch_state(RepeaterState.STANDBY)
     print(f"    Stato dopo rollback: {proto_r2.state.name}")
     assert not proto_r2.is_active, "R2 dovrebbe essere STANDBY dopo il rollback"
