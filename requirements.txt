@@ -1,0 +1,4 @@
+netsquid
+numpy
+pandas
+matplotlib
